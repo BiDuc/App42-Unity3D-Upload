@@ -29,7 +29,8 @@ public class AllFiles_Response : MonoBehaviour,App42CallBack
 			Debug.Log ("EXCEPTION  :  " + e);
 		}
 		
-		public string GetURL() {
+		public string GetURL() 
+		{
 			return url1;
 		}
 		

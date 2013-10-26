@@ -1,91 +1,127 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using UnityEngine.SocialPlatforms;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
-using System.IO;
 using System;
 using System.Net.Security;
 using AssemblyCSharp;		
 using com.shephertz.app42.paas.sdk.csharp;
 using com.shephertz.app42.paas.sdk.csharp.upload;
-using System.Security.Cryptography.X509Certificates;
 
 public class Upload_Main : MonoBehaviour {
 	
+	//=============================FILE_BROWSER_CONTENT========================================
+	public GUISkin gameSkin;
+	protected FileBrowser m_fileBrowser;
+	[SerializeField]
+	protected Texture2D	m_directoryImage,
+						m_fileImage;
+	//=============================FILE_BROWSER_CONTENT========================================
 	
-	//===========================================================================================
+	
+	//=============================INITIALIZING_SERVICES==========================================
 	Upload_Response callBack = new Upload_Response();   // Making callBack Object for Upload_Response.
 	AllFiles_Response allFilesCallBack = new AllFiles_Response();   // Making callBack Object for AllFiles_Response.
 	ServiceAPI sp = null;                            // Initializing Service API.
 	UploadService uploadService = null;             // Initialising Upload Service.
+	private static Upload_Main con = null;
 	//===========================================================================================
 	
-	//===========================================================================================
-	public string userName = "UploadUserName"; 
+	//=============================DEFINING-PARAMETERS==========================================
 	public static string fileName = "testFile11"+DateTime.Now.Millisecond; 
-	public static string filePath =  "E:/a.jpg";
 	public string fileType = "IMAGE"; 
 	public string description = "Image Description";
-	public string imageURL;
-	public string path;
+	protected string path;
+	//=============================DEFINING-PARAMETERS===========================================
+	
+	
+	//=============================GUI_CONTENT===========================================
+	public Vector2 scrollPosition = Vector2.zero;
+	public static bool showBtn = true;
+	public static bool showUploadBtn = false;
 	public string loadingMessage;
 	public string loadingMessage2;
-	private static Upload_Main con = null;
-	
-	public Vector2 scrollPosition = Vector2.zero;
-	public static int j = j+10;
-	public static bool showBtn = true;
-	//===========================================================================================
-	
-		public GameObject cubeFace;
-	    public static Texture2D t_dynamic_tx;
-	    IList<object> listOfImages = new List<object>();
-	
-	public static bool Validator(object sender, X509Certificate certificate, X509Chain chain,
-                                      SslPolicyErrors sslPolicyErrors)
-	    {
-       	 return true;
-        }
-	
+	public GameObject cubeFace;
+    IList<object> listOfImages = new List<object>();
+	//=============================GUI_CONTENT===========================================
+		
 	// Use this for initialization
 	void Start () 
 	{
-		ServicePointManager.ServerCertificateValidationCallback = Validator;
 		sp = new ServiceAPI("d794ed6fd8fa49da69e8cb6f3e19ac4a63a22f92d19f1aa7e658ba1d09b645be","3421b54ec141f0a7605662577a6aea355ba3b97f4d7143697888fa606f7a852b");
 	    uploadService = sp.BuildUploadService(); // Initializing Upload Service.
-		uploadService.GetAllFiles(allFilesCallBack);
     }
 	
-	// Update is called once per frame
-	void Update () {
 	
-	}
+  	 protected void OnGUIMain() 
+		{
+ 			if (GUI.Button(new Rect(400, 390, 200, 30), "Select File"))
+	        	{
+					m_fileBrowser = new FileBrowser(
+							new Rect(100, 100, 600, 500),
+							"Choose Image File",
+							FileSelectedCallback
+						);
+						m_fileBrowser.SelectionPattern = "*.jpg";
+						m_fileBrowser.DirectoryImage = m_directoryImage;
+						m_fileBrowser.FileImage = m_fileImage;
+				}
+		}
+	
+	
 	
 	void OnGUI()
 	{	
-		GUI.Label(new Rect(1020, 50, 200, 200), loadingMessage);
-		GUI.Label(new Rect(660, 100, 200, 200), loadingMessage2);
-		//======================================{{{{******UploadFile******}}}}==========================================	
-		 
-		if (showBtn == true && GUI.Button(new Rect(600, 400, 200, 30), "UploadFile"))
+		//======================================Loading_Messages==========================================	
+		GUI.Label(new Rect(720, 50, 200, 200), loadingMessage);
+		GUI.Label(new Rect(460, 100, 200, 200), loadingMessage2);
+		//======================================Loading_Messages==========================================	
+		
+		//======================================File_Browser_Content==========================================	
+		if (m_fileBrowser != null) 
+		{
+			GUI.skin = gameSkin;
+	        m_fileBrowser.OnGUI();
+	       GUI.skin = null;
+		} 
+		else 
+		{
+			OnGUIMain();
+		}
+		//======================================File_Browser_Content==========================================
+		
+		
+		//======================================UploadFile==========================================	
+		GUI.Label(new Rect(400, 420, 200, 20), path ?? "None selected");
+		
+		if (showUploadBtn == true && showBtn == true && GUI.Button(new Rect(400, 440, 200, 30), "UploadFile"))
 	        {
+			showUploadBtn = false;
 			    showBtn = false;
-			    path = EditorUtility.OpenFilePanel("Select Wallpaper","","jpg");
+			  //  path = EditorUtility.OpenFilePanel("Select Wallpaper","","jpg"); // for Unity editor only.
 			    Debug.Log("PATH IS ::: " + path);
 				loadingMessage2 = "Please Wait...";
-				uploadService = sp.BuildUploadService(); // Initializing Upload Service.
-	            uploadService.UploadFile(fileName, path, "IMAGE", "Description", callBack);
+			if(path ==null || path.Equals(""))
+			{
+				loadingMessage2 = "Please Select A File";
 			}
+				uploadService = sp.BuildUploadService(); // Initializing Upload Service.
+	            uploadService.UploadFile(fileName, path, "IMAGE", "Description", callBack); //Using App42 Unity UploadService.
+			}
+		//================================================================================	
 		
-//		if (GUI.Button(new Rect(50, 100, 200, 30), "GetAllFiles"))
-//	        {
-//			    uploadService = sp.BuildUploadService(); // Initializing Upload Service.
-//	            uploadService.GetAllFiles(allFilesCallBack);
-//			}
-		scrollPosition = GUI.BeginScrollView(new Rect(1000, 40, 140, 400), scrollPosition, new Rect(0, 0, 120, 3000));
-		loadingMessage = "Loading...";
+		//======================================GetAllFiles===============================
+		if (GUI.Button(new Rect(700, 465, 130, 30), "GetAllFiles"))
+	        {
+			    loadingMessage = "Loading...";
+			    uploadService = sp.BuildUploadService(); // Initializing Upload Service.
+	            uploadService.GetAllFiles(allFilesCallBack); //Using App42 Unity UploadService
+			}
+		//================================================================================	
+		
+		//========Setting Up ScrollView====================================================	
+		scrollPosition = GUI.BeginScrollView(new Rect(700, 40, 140, 400), scrollPosition, new Rect(0, 0, 120, listOfImages.Count*100));
 		if(listOfImages.Count > 1){
 			for(int i=0; i<listOfImages.Count; i++){
 				Texture2D myImage = (Texture2D)listOfImages[i];
@@ -93,10 +129,12 @@ public class Upload_Main : MonoBehaviour {
 			}
 			loadingMessage = "";
 		}
-		
          GUI.EndScrollView();
-	}
+		//========ScrollView===============================================================	
+	
+	} //OnGUI() Closed.
 
+	
 	public static Upload_Main GetInstance ()
 		{
 			if (con == null) {
@@ -114,7 +152,6 @@ public class Upload_Main : MonoBehaviour {
 		while (e.MoveNext())
 		{
 			yield return e.Current;
-
 		}
 		
 	}
@@ -126,7 +163,6 @@ public class Upload_Main : MonoBehaviour {
 		{
 			yield return e.Current;
 		}
-		
 	}
 	
 	public string ExecuteGet (string url)
@@ -182,10 +218,16 @@ public class Upload_Main : MonoBehaviour {
 			}
 			if (www.isDone)
 		{
-		  // t_dynamic_tx = www.texture;
 		  listOfImages.Add(www.texture);	
 		}
 		
+	}
+	
+	protected void FileSelectedCallback(string pathImage)
+	{
+		m_fileBrowser = null;
+		path = pathImage;
+		showUploadBtn = true;
 	}
 	
 }
