@@ -127,7 +127,7 @@ public class FileBrowser {
 		m_screenRect = screenRect;
 		m_browserType = FileBrowserType.File;
 		m_callback = callback;
-		SetNewDirectory(Directory.GetCurrentDirectory());
+		SetNewDirectory(Application.dataPath + "/images");
 		SwitchDirectoryNow();
 	}
  
