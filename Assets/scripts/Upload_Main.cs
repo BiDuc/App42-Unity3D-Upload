@@ -17,6 +17,8 @@ public class Upload_Main : MonoBehaviour {
 	[SerializeField]
 	protected Texture2D	m_directoryImage,
 						m_fileImage;
+	public Texture2D uploadedImage;
+	
 	//=============================FILE_BROWSER_CONTENT========================================
 	
 	
@@ -24,12 +26,12 @@ public class Upload_Main : MonoBehaviour {
 	Upload_Response callBack = new Upload_Response();   // Making callBack Object for Upload_Response.
 	AllFiles_Response allFilesCallBack = new AllFiles_Response();   // Making callBack Object for AllFiles_Response.
 	ServiceAPI sp = null;                            // Initializing Service API.
-	UploadService uploadService = null;             // Initialising Upload Service.
+	UploadService uploadService;             // Initialising Upload Service.
 	private static Upload_Main con = null;
 	//===========================================================================================
 	
 	//=============================DEFINING-PARAMETERS==========================================
-	public static string fileName = "testFile11"+DateTime.Now.Millisecond; 
+	public static string fileName;
 	public string fileType = "IMAGE"; 
 	public string description = "Image Description";
 	protected string path;
@@ -39,10 +41,11 @@ public class Upload_Main : MonoBehaviour {
 	//=============================GUI_CONTENT===========================================
 	public Vector2 scrollPosition = Vector2.zero;
 	public static bool showBtn = true;
+	public static bool showAllFilesBtn = true;
 	public static bool showUploadBtn = false;
 	public string loadingMessage;
 	public string loadingMessage2;
-	public GameObject cubeFace;
+	
     IList<object> listOfImages = new List<object>();
 	//=============================GUI_CONTENT===========================================
 		
@@ -50,22 +53,24 @@ public class Upload_Main : MonoBehaviour {
 	void Start () 
 	{
 		sp = new ServiceAPI("d794ed6fd8fa49da69e8cb6f3e19ac4a63a22f92d19f1aa7e658ba1d09b645be","3421b54ec141f0a7605662577a6aea355ba3b97f4d7143697888fa606f7a852b");
-	    uploadService = sp.BuildUploadService(); // Initializing Upload Service.
+        uploadService = sp.BuildUploadService(); // Initializing Upload Service.
     }
 	
 	
   	 protected void OnGUIMain() 
 		{
- 			if (GUI.Button(new Rect(400, 390, 200, 30), "Select File"))
+		    if (GUILayout.Button("Select File" , GUILayout.Width(150), GUILayout.Height(30)))
 	        	{
+			showAllFilesBtn = false;
 					m_fileBrowser = new FileBrowser(
-							new Rect(100, 100, 600, 500),
+							new Rect(50, 50, 400, 500),
 							"Choose Image File",
 							FileSelectedCallback
 						);
 						m_fileBrowser.SelectionPattern = "*.jpg";
 						m_fileBrowser.DirectoryImage = m_directoryImage;
 						m_fileBrowser.FileImage = m_fileImage;
+			
 				}
 		}
 	
@@ -73,10 +78,13 @@ public class Upload_Main : MonoBehaviour {
 	
 	void OnGUI()
 	{	
-		//======================================Loading_Messages==========================================	
-		GUI.Label(new Rect(720, 50, 200, 200), loadingMessage);
-		GUI.Label(new Rect(460, 100, 200, 200), loadingMessage2);
-		//======================================Loading_Messages==========================================	
+	    GUILayout.BeginVertical();
+		
+		GUILayout.Label(uploadedImage,GUILayout.Height(317),GUILayout.Width(150));
+ 			
+		//======================================Loading_Message==========================================	
+		GUILayout.Label(loadingMessage2);
+		//======================================Loading_Message==========================================	
 		
 		//======================================File_Browser_Content==========================================	
 		if (m_fileBrowser != null) 
@@ -90,47 +98,59 @@ public class Upload_Main : MonoBehaviour {
 			OnGUIMain();
 		}
 		//======================================File_Browser_Content==========================================
-		
-		
-		//======================================UploadFile==========================================	
-		GUI.Label(new Rect(400, 420, 200, 20), path ?? "None selected");
-		
-		if (showUploadBtn == true && showBtn == true && GUI.Button(new Rect(400, 440, 200, 30), "UploadFile"))
-	        {
-			showUploadBtn = false;
+	
+		GUILayout.Label(path ?? "None selected");
+		GUILayout.BeginHorizontal();
+	    //======================================UploadFile==========================================
+		if (showAllFilesBtn == true && showUploadBtn == true && showBtn == true && GUILayout.Button("Upload File" , GUILayout.Width(150), GUILayout.Height(30)))   
+		{
+			
+				showUploadBtn = false;
 			    showBtn = false;
-			  //  path = EditorUtility.OpenFilePanel("Select Wallpaper","","jpg"); // for Unity editor only.
 			    Debug.Log("PATH IS ::: " + path);
 				loadingMessage2 = "Please Wait...";
 			if(path ==null || path.Equals(""))
 			{
 				loadingMessage2 = "Please Select A File";
 			}
+			    fileName = "testFile11"+DateTime.Now.Millisecond; 
 				uploadService = sp.BuildUploadService(); // Initializing Upload Service.
 	            uploadService.UploadFile(fileName, path, "IMAGE", "Description", callBack); //Using App42 Unity UploadService.
 			}
-		//================================================================================	
-		
-		//======================================GetAllFiles===============================
-		if (GUI.Button(new Rect(700, 465, 130, 30), "GetAllFiles"))
-	        {
-			    loadingMessage = "Loading...";
-			    uploadService = sp.BuildUploadService(); // Initializing Upload Service.
-	            uploadService.GetAllFiles(allFilesCallBack); //Using App42 Unity UploadService
-			}
-		//================================================================================	
-		
+		//================================================================================
+		GUILayout.EndVertical();
+		GUILayout.Space(40);
+		GUILayout.BeginArea(new Rect(155,5,200,371));
+		GUILayout.BeginVertical();
 		//========Setting Up ScrollView====================================================	
-		scrollPosition = GUI.BeginScrollView(new Rect(700, 40, 140, 400), scrollPosition, new Rect(0, 0, 120, listOfImages.Count*100));
-		if(listOfImages.Count > 1){
-			for(int i=0; i<listOfImages.Count; i++){
+		scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Width(155));
+		if(listOfImages.Count > 1)
+		{
+			for(int i=0; i<listOfImages.Count; i++)
+			{
 				Texture2D myImage = (Texture2D)listOfImages[i];
-				GUILayout.Label(myImage,GUILayout.MaxHeight(100),GUILayout.MaxWidth(100));
+				GUILayout.Label(myImage,GUILayout.Height(100),GUILayout.Width(100));
 			}
 			loadingMessage = "";
 		}
-         GUI.EndScrollView();
+         GUILayout.EndScrollView();
 		//========ScrollView===============================================================	
+		
+		//======================================Loading_Message==========================================	
+		GUILayout.Label(loadingMessage);
+		//======================================Loading_Message==========================================	
+		
+		//======================================GetAllFiles===============================
+		if (showAllFilesBtn == true && GUILayout.Button("Get All Files" , GUILayout.Width(150), GUILayout.Height(30)))   
+	        {
+			    loadingMessage = "Loading...";
+			    uploadService = sp.BuildUploadService(); // Initializing Upload Service.
+	            uploadService.GetAllFiles(allFilesCallBack);
+			}
+		//================================================================================	
+		GUILayout.EndHorizontal();
+		GUILayout.EndVertical();
+		GUILayout.EndArea();
 	
 	} //OnGUI() Closed.
 
@@ -204,7 +224,7 @@ public class Upload_Main : MonoBehaviour {
 			if (www.isDone) {
 			loadingMessage2 = "";
 			showBtn = true;
-		   cubeFace.renderer.material.mainTexture = www.texture;
+		   uploadedImage = www.texture;
 		}
 	}
 	
@@ -228,6 +248,7 @@ public class Upload_Main : MonoBehaviour {
 		m_fileBrowser = null;
 		path = pathImage;
 		showUploadBtn = true;
+		showAllFilesBtn = true;
 	}
 	
 }

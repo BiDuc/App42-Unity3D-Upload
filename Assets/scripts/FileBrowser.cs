@@ -122,14 +122,35 @@ public class FileBrowser {
 	protected FinishedCallback m_callback;
  
 	// Browsers need at least a rect, name and callback
+	string pathDir;
+	
 	public FileBrowser(Rect screenRect, string name, FinishedCallback callback) {
+		
+#if UNITY_ANDROID
+pathDir = "/storage/";
+#endif
+#if UNITY_EDITOR || UNITY_WEBPLAYER
+pathDir = Directory.GetCurrentDirectory();
+#endif
+#if UNITY_IOS
+pathDir = "/storage/";
+#endif
+#if UNITY_STANDALONE_WIN
+pathDir = Directory.GetCurrentDirectory();
+#endif		
 		m_name = name;
 		m_screenRect = screenRect;
 		m_browserType = FileBrowserType.File;
 		m_callback = callback;
-		SetNewDirectory(Application.dataPath + "/images");
+		SetNewDirectory(Directory.GetCurrentDirectory());
+		SetNewDirectory(pathDir);
 		SwitchDirectoryNow();
 	}
+
+	
+
+	
+
  
 	protected void SetNewDirectory(string directory) {
 		m_newDirectory = directory;
@@ -147,8 +168,25 @@ public class FileBrowser {
  
 	protected void ReadDirectoryContents() {
 		if (m_currentDirectory == "/") {
-			m_currentDirectoryParts = new string[] {""};
-			m_currentDirectoryMatches = false;
+//			m_currentDirectoryParts = new string[] {""};
+//			m_currentDirectoryMatches = false;
+			
+//================================================================			
+			if (SelectionPattern != null)
+	{
+		string directoryName = Path.GetDirectoryName(m_currentDirectory);
+		string[] generation = new string[0];
+		if(directoryName != null)
+		{ 	//This is new: generation should be an empty array for the root directory.
+			//directoryName will be null if it's a root directory
+			generation = Directory.GetDirectories(
+			directoryName,
+			SelectionPattern );
+		}
+		m_currentDirectoryMatches = Array.IndexOf(generation, m_currentDirectory) >= 0;
+	}
+//================================================================				
+			
 		} else {
 			m_currentDirectoryParts = m_currentDirectory.Split(Path.DirectorySeparatorChar);
 			if (SelectionPattern != null) {
