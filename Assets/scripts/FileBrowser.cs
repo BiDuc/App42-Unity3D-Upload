@@ -133,7 +133,7 @@ pathDir = "/storage/";
 pathDir = Directory.GetCurrentDirectory();
 #endif
 #if UNITY_IOS
-pathDir = "/storage/";
+pathDir = "/images/";
 #endif
 #if UNITY_STANDALONE_WIN
 pathDir = Directory.GetCurrentDirectory();
@@ -142,7 +142,6 @@ pathDir = Directory.GetCurrentDirectory();
 		m_screenRect = screenRect;
 		m_browserType = FileBrowserType.File;
 		m_callback = callback;
-		SetNewDirectory(Directory.GetCurrentDirectory());
 		SetNewDirectory(pathDir);
 		SwitchDirectoryNow();
 	}
