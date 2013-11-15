@@ -127,15 +127,15 @@ public class FileBrowser {
 	public FileBrowser(Rect screenRect, string name, FinishedCallback callback) {
 		
 #if UNITY_ANDROID
-pathDir = "/storage/";
+pathDir = "/storage/";   // write here images path for your android device.
 #endif
 #if UNITY_EDITOR || UNITY_WEBPLAYER
 pathDir = Directory.GetCurrentDirectory();
 #endif
-#if UNITY_IOS
-pathDir = "/images/";
+#if UNITY_IPHONE
+pathDir = Application.dataPath;  // write here images path for your iOS device.For e.g "/private/var/" etc.
 #endif
-#if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX
 pathDir = Directory.GetCurrentDirectory();
 #endif		
 		m_name = name;
