@@ -52,7 +52,7 @@ public class Upload_Main : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
 	{
-		sp = new ServiceAPI("d794ed6fd8fa49da69e8cb6f3e19ac4a63a22f92d19f1aa7e658ba1d09b645be","3421b54ec141f0a7605662577a6aea355ba3b97f4d7143697888fa606f7a852b");
+		sp = new ServiceAPI("YOUR_API_KEY","YOUR_SECRET_KEY");
         uploadService = sp.BuildUploadService(); // Initializing Upload Service.
     }
 	
